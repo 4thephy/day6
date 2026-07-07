@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindFlow - AI 감정 일기</title>
+    <!-- Google Fonts: Outfit & Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Glow Backdrops for Premium Aesthetics -->
+    <div class="glow-bg glow-1"></div>
+    <div class="glow-bg glow-2"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i data-lucide="sparkles" class="logo-icon"></i>
+                <span class="brand-name">MindFlow</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="write-tab">
+                    <i data-lucide="pen-tool"></i>
+                    <span>오늘의 일기</span>
+                </button>
+                <button class="nav-item" data-tab="calendar-tab">
+                    <i data-lucide="calendar"></i>
+                    <span>감정 달력</span>
+                </button>
+                <button class="nav-item" data-tab="dashboard-tab">
+                    <i data-lucide="line-chart"></i>
+                    <span>감정 대시보드</span>
+                </button>
+                <button class="nav-item" data-tab="healing-tab">
+                    <i data-lucide="heart"></i>
+                    <span>힐링 공간</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p>당신의 감정을 보살펴드릴게요.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header for Mobile Nav Toggle -->
+            <header class="mobile-header">
+                <div class="brand">
+                    <i data-lucide="sparkles" class="logo-icon"></i>
+                    <span class="brand-name">MindFlow</span>
+                </div>
+                <button class="menu-toggle" id="menuToggleBtn">
+                    <i data-lucide="menu"></i>
+                </button>
+            </header>
+
+            <!-- TAB 1: 오늘의 일기 -->
+            <section id="write-tab" class="tab-content active">
+                <div class="section-header">
+                    <h1 class="gradient-text">오늘의 하루는 어땠어요?</h1>
+                    <p class="subtitle">오늘 있었던 일과 느꼈던 마음을 솔직하게 적어보세요. AI가 당신의 이야기를 듣고 있습니다.</p>
+                </div>
+
+                <div class="diary-card glass-panel">
+                    <div class="diary-meta-inputs">
+                        <div class="meta-item">
+                            <label><i data-lucide="calendar-days"></i> 날짜</label>
+                            <input type="date" id="diary-date">
+                        </div>
+                        <div class="meta-item">
+                            <label><i data-lucide="cloud-sun"></i> 오늘 날씨</label>
+                            <div class="weather-selector">
+                                <button class="weather-btn active" data-weather="sunny" title="맑음"><i data-lucide="sun"></i></button>
+                                <button class="weather-btn" data-weather="cloudy" title="흐림"><i data-lucide="cloud"></i></button>
+                                <button class="weather-btn" data-weather="rainy" title="비"><i data-lucide="cloud-rain"></i></button>
+                                <button class="weather-btn" data-weather="snowy" title="눈"><i data-lucide="snowflake"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diary Textarea -->
+                    <div class="textarea-container">
+                        <textarea id="diary-content" placeholder="오늘 있었던 일, 당신이 느낀 기쁨, 우울함, 스트레스 등 생각나는 것들을 편하게 적어보세요. 글을 길게 쓰실수록 AI가 더 깊이 이해하고 위로의 답변을 줄 수 있습니다..."></textarea>
+                        <span class="char-count" id="charCount">0자</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="diary-actions">
+                        <button id="btn-voice-input" class="btn btn-secondary">
+                            <i data-lucide="mic"></i>
+                            <span>음성으로 입력하기</span>
+                        </button>
+                        <button id="btn-analyze" class="btn btn-primary">
+                            <i data-lucide="wand2"></i>
+                            <span>분석 요청하기</span>
+                        </button>
+                    </div>
+
+                    <!-- Voice Input Status Indicator -->
+                    <div id="voice-status" class="voice-status-bar hidden">
+                        <div class="pulse-ring"></div>
+                        <span id="voice-status-text">음성을 인식하는 중입니다... 이야기해 주세요.</span>
+                        <button id="btn-stop-voice" class="btn-icon-close" title="음성 인식 중지"><i data-lucide="x"></i></button>
+                    </div>
+
+                    <!-- AI Response Area -->
+                    <div class="ai-response-container">
+                        <div class="ai-header">
+                            <div class="ai-badge">
+                                <i data-lucide="cpu"></i>
+                                <span>MindFlow AI</span>
+                            </div>
+                            <h3>AI 답변</h3>
+                        </div>
+                        <div class="ai-response-box" id="ai-response-text">
+                            여기에 AI의 답변이 표시됩니다.
+                        </div>
+
+                        <!-- Sentiment Result Overlay (Hidden until analyzed) -->
+                        <div id="analysis-result-panel" class="analysis-result-panel hidden">
+                            <div class="divider"></div>
+                            <h4 class="result-title"><i data-lucide="bar-chart-2"></i> 감정 분석 리포트</h4>
+                            <div class="emotion-metrics">
+                                <div class="metric-card">
+                                    <span class="metric-label">대표 감정</span>
+                                    <span class="metric-value" id="res-primary-emotion">-</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">긍정 지수</span>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill" id="res-positivity-bar" style="width: 0%"></div>
+                                    </div>
+                                    <span class="metric-value" id="res-positivity-percent">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="keyword-tags">
+                                <span class="tag-title">추출된 키워드:</span>
+                                <div class="tags-wrapper" id="res-keywords">
+                                    <!-- Dynamic tags -->
+                                </div>
+                            </div>
+
+                            <div class="recommendation-box">
+                                <h5><i data-lucide="heart-handshake"></i> 맞춤형 힐링 추천 액티비티</h5>
+                                <p id="res-recommendation"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 나의 일기 히스토리 섹션 -->
+                    <div class="history-section glass-panel">
+                        <h4 class="history-title"><i data-lucide="history"></i> 나의 일기 히스토리</h4>
+                        <div class="history-list" id="history-list">
+                            <p class="history-empty">히스토리를 불러오는 중이거나 기록된 일기가 없습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: 감정 달력 -->
+            <section id="calendar-tab" class="tab-content">
+                <div class="section-header">
+                    <h1 class="gradient-text">감정 달력</h1>
+                    <p class="subtitle">한 달 동안 나의 마음이 어떤 빛깔을 띠었는지 모아서 살펴보세요.</p>
+                </div>
+
+                <div class="calendar-layout">
+                    <div class="calendar-container glass-panel">
+                        <div class="calendar-header">
+                            <button id="prev-month" class="btn-icon"><i data-lucide="chevron-left"></i></button>
+                            <h2 id="current-month-year">2026년 7월</h2>
+                            <button id="next-month" class="btn-icon"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <div>일</div>
+                            <div>월</div>
+                            <div>화</div>
+                            <div>수</div>
+                            <div>목</div>
+                            <div>금</div>
+                            <div>토</div>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid-days">
+                            <!-- Days generated dynamically by JS -->
+                        </div>
+                        <div class="calendar-legend">
+                            <div class="legend-item"><span class="legend-dot joy"></span>행복/기쁨</div>
+                            <div class="legend-item"><span class="legend-dot sadness"></span>슬픔/우울</div>
+                            <div class="legend-item"><span class="legend-dot anger"></span>화남/짜증</div>
+                            <div class="legend-item"><span class="legend-dot anxiety"></span>불안/걱정</div>
+                            <div class="legend-item"><span class="legend-dot fatigue"></span>무기력/피곤</div>
+                            <div class="legend-item"><span class="legend-dot calm"></span>평온/안정</div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Entry Detail Panel -->
+                    <div class="calendar-detail-panel glass-panel" id="calendar-entry-detail">
+                        <div class="no-entry-state">
+                            <i data-lucide="info" class="info-icon"></i>
+                            <p>달력에서 감정 마크가 있는 날을 클릭하면 해당 일의 감정 일기와 AI 답변을 볼 수 있습니다.</p>
+                        </div>
+                        <div class="entry-detail-content hidden" id="entry-detail-content">
+                            <div class="detail-header">
+                                <span class="detail-date" id="detail-date-text">2026.07.01</span>
+                                <span class="emotion-badge" id="detail-emotion-badge">행복</span>
+                            </div>
+                            <div class="detail-section">
+                                <h6>작성한 일기</h6>
+                                <p class="detail-diary-text" id="detail-diary-text"></p>
+                            </div>
+                            <div class="detail-section">
+                                <h6>AI 답변 리포트</h6>
+                                <div class="detail-ai-box" id="detail-ai-text"></div>
+                            </div>
+                            <div class="detail-actions">
+                                <button id="btn-edit-entry" class="btn btn-secondary btn-sm"><i data-lucide="edit-3"></i> 수정하기</button>
+                                <button id="btn-delete-entry" class="btn btn-danger btn-sm"><i data-lucide="trash-2"></i> 삭제하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: 감정 대시보드 -->
+            <section id="dashboard-tab" class="tab-content">
+                <div class="section-header">
+                    <h1 class="gradient-text">감정 대시보드</h1>
+                    <p class="subtitle">기록된 감정 데이터를 통해 내 마음의 통계와 추세를 입체적으로 분석합니다.</p>
+                </div>
+
+                <!-- Stats summary cards -->
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <div class="stat-icon-wrapper positivity"><i data-lucide="smile"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">평균 긍정 지수</span>
+                            <h3 class="stat-value" id="stat-avg-positivity">0%</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <div class="stat-icon-wrapper dominant"><i data-lucide="activity"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">최다 기록 감정</span>
+                            <h3 class="stat-value" id="stat-main-emotion">-</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <div class="stat-icon-wrapper streak"><i data-lucide="flame"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">연속 작성 일수</span>
+                            <h3 class="stat-value" id="stat-streak">0일</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts layout -->
+                <div class="charts-container">
+                    <div class="chart-card glass-panel">
+                        <h3>감정 흐름 추이 (최근 7회)</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card glass-panel">
+                        <h3>감정 분포 비율</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keyword word cloud / list -->
+                <div class="keyword-cloud-section glass-panel">
+                    <h3>최근 내 일기 속 자주 나타난 감정 키워드</h3>
+                    <div class="keywords-list" id="dashboard-keywords">
+                        <!-- Dynamic keywords -->
+                        <p class="no-keywords">일기를 작성하고 분석하면 감정 키워드가 여기에 축적됩니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: 힐링 공간 -->
+            <section id="healing-tab" class="tab-content">
+                <div class="section-header">
+                    <h1 class="gradient-text">마음 챙김 힐링 공간</h1>
+                    <p class="subtitle">지친 마음을 달래줄 수 있는 호흡 명상과 나를 위로해 주는 긍정 확언을 만나보세요.</p>
+                </div>
+
+                <div class="healing-layout">
+                    <!-- Breathing meditation card -->
+                    <div class="healing-card glass-panel">
+                        <div class="healing-header">
+                            <i data-lucide="wind" class="heal-icon"></i>
+                            <h3>마음 챙김 호흡 가이드</h3>
+                        </div>
+                        <p class="heal-desc">애니메이션의 수축과 이완에 맞춰 숨을 깊게 들이마시고 내쉬어 보세요. 불안감이나 분노를 조절하고 머리를 맑게 하는 데 큰 도움이 됩니다.</p>
+                        
+                        <div class="breathing-area">
+                            <div class="breathing-circle-outer" id="breathing-circle">
+                                <div class="breathing-circle-inner"></div>
+                                <span class="breathing-text" id="breathing-text">준비하기</span>
+                            </div>
+                        </div>
+
+                        <div class="breathing-controls">
+                            <div class="timer" id="breathing-timer">03:00</div>
+                            <button id="btn-breathing-start" class="btn btn-primary">호흡 시작하기</button>
+                        </div>
+                    </div>
+
+                    <!-- Affirmations Card generator -->
+                    <div class="healing-card glass-panel">
+                        <div class="healing-header">
+                            <i data-lucide="heart-pulse" class="heal-icon"></i>
+                            <h3>오늘의 긍정 확언</h3>
+                        </div>
+                        <p class="heal-desc">마음을 차분하게 만들고 긍정적인 힘을 불어넣어 줄 확언 메시지입니다. 카드를 탭하여 새로운 확언을 확인해 보세요.</p>
+                        
+                        <div class="affirmation-card-container">
+                            <div class="affirmation-card" id="affirmation-card">
+                                <div class="card-front">
+                                    <i data-lucide="help-circle" class="question-icon"></i>
+                                    <p>나를 위한 한마디 열기</p>
+                                </div>
+                                <div class="card-back">
+                                    <p class="affirmation-quote" id="affirmation-text">"나는 오늘도 가치 있고 사랑스러운 하루를 채웠습니다."</p>
+                                    <span class="affirmation-author">- MindFlow -</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="affirmation-controls">
+                            <button id="btn-next-affirmation" class="btn btn-secondary">새로운 확언 뽑기</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Diary Entry Modal -->
+    <div id="edit-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>일기 수정하기</h3>
+                <button id="btn-close-modal" class="btn-icon"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="edit-diary-content"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-edit" class="btn btn-secondary">취소</button>
+                <button id="btn-save-edit" class="btn btn-primary">수정 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

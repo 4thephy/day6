@@ -3,7 +3,8 @@
 // Helper function to parse REDIS_URL (rediss://default:password@host:port) to REST url and token
 function parseRedisUrl(redisUrl) {
   try {
-    const cleanedUrl = redisUrl.replace(/^rediss?:\/\//, '');
+    const cleanedKey = redisUrl.replace(/^['"]|['"]$/g, '').trim();
+    const cleanedUrl = cleanedKey.replace(/^rediss?:\/\//, '');
     const [auth, hostPort] = cleanedUrl.split('@');
     const [username, password] = auth.split(':');
     const [host, port] = hostPort.split(':');

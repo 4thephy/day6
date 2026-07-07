@@ -36,8 +36,7 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') {
     return response.status(405).json({ error: 'Method Not Allowed. Please use POST.' });
   }
-
-  const apiKey = process.env.GEMINI_API_KEY || process.env.Gemini_API_Key || process.env.gemini_api_key;
+  const apiKey = process.env.gemini_api_key || process.env.Gemini_API_Key || process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error("GEMINI_API_KEY environment variable is missing.");
     return response.status(500).json({ error: "Server Configuration Error: API key is missing. Please check Vercel environment variables." });
@@ -108,7 +107,7 @@ export default async function handler(request, response) {
 
     // 2. Backup to Upstash Serverless Redis using REDIS_URL or fallback REST credentials
     let redisConfig = null;
-    const redisUrl = process.env.REDIS_URL || process.env.Redis_URL || process.env.redis_url;
+    const redisUrl = process.env.redis_url || process.env.Redis_URL || process.env.REDIS_URL;
     if (redisUrl) {
       redisConfig = parseRedisUrl(redisUrl);
     } else if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {

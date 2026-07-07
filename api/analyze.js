@@ -144,24 +144,43 @@ export default async function handler(request, response) {
           body: JSON.stringify(['SET', redisKey, JSON.stringify(valueToSave)])
         });
 
+        let backupSuccess = false;
+        let backupErrorMsg = null;
         if (!redisResponse.ok) {
-          const errText = await redisResponse.text();
-          console.error(`Upstash Redis backup failed: ${errText}`);
+          backupErrorMsg = await redisResponse.text();
+          console.error(`Upstash Redis backup failed: ${backupErrorMsg}`);
         } else {
+          backupSuccess = true;
           console.log(`Successfully backed up to Redis with key: ${redisKey}`);
         }
+
+        return response.status(200).json({
+          success: true,
+          primaryEmotion: emotionKey,
+          aiResponse: geminiText,
+          backupSuccess,
+          backupError: backupErrorMsg
+        });
       } catch (redisError) {
         console.error("Failed to perform Upstash Redis backup:", redisError);
+        return response.status(200).json({
+          success: true,
+          primaryEmotion: emotionKey,
+          aiResponse: geminiText,
+          backupSuccess: false,
+          backupError: redisError.message
+        });
       }
     } else {
       console.warn("Skipping Redis backup: REDIS_URL and Upstash REST configs are missing.");
+      return response.status(200).json({
+        success: true,
+        primaryEmotion: emotionKey,
+        aiResponse: geminiText,
+        backupSuccess: false,
+        backupError: "REDIS_URL configuration is missing."
+      });
     }
-
-    return response.status(200).json({
-      success: true,
-      primaryEmotion: emotionKey,
-      aiResponse: geminiText
-    });
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     return response.status(500).json({ error: error.message });

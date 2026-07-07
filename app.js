@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MindFlow - AI Emotion Diary Application Logic
  */
 
@@ -1269,5 +1269,64 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             console.error("Network error while fetching diary history:", e);
         }
+    }
+
+    // 시스템 연동 자가 진단 도구 이벤트 바인딩
+    const btnRunDiagnostics = document.getElementById('btn-run-diagnostics');
+    const diagnosticsResult = document.getElementById('diagnostics-result');
+
+    if (btnRunDiagnostics && diagnosticsResult) {
+        btnRunDiagnostics.addEventListener('click', async () => {
+            diagnosticsResult.style.display = 'block';
+            diagnosticsResult.innerHTML = '=== 자가 진단 시작 ===\n\n';
+            
+            try {
+                // Step 1: /api/history API 호출 테스트
+                diagnosticsResult.innerHTML += 'Step 1: [/api/history] 호출 (데이터베이스 조회)...\n';
+                const historyRes = await fetch('/api/history');
+                diagnosticsResult.innerHTML += `  -> HTTP 상태 코드: ${historyRes.status}\n`;
+                
+                if (historyRes.ok) {
+                    const historyData = await historyRes.json();
+                    diagnosticsResult.innerHTML += `  -> API 통신 상태: ${historyData.success ? '성공' : '실패'}\n`;
+                    if (historyData.success) {
+                        diagnosticsResult.innerHTML += `  -> 연동된 Redis 데이터 수: ${historyData.history ? historyData.history.length : 0}개\n`;
+                    } else {
+                        diagnosticsResult.innerHTML += `  -> 오류 요인: ${historyData.error || '상세 에러 내용 없음'}\n`;
+                    }
+                } else {
+                    const errText = await historyRes.text();
+                    diagnosticsResult.innerHTML += `  -> 서버 에러 응답: ${errText.substring(0, 200)}\n`;
+                }
+                
+                // Step 2: /api/analyze API 호출 테스트
+                diagnosticsResult.innerHTML += '\nStep 2: [/api/analyze] 호출 (감정 분석 및 Redis 백업 테스트)...\n';
+                const analyzeRes = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: '진단 도구 연동성 검사 테스트 데이터입니다.' })
+                });
+                diagnosticsResult.innerHTML += `  -> HTTP 상태 코드: ${analyzeRes.status}\n`;
+                
+                if (analyzeRes.ok) {
+                    const analyzeData = await analyzeRes.json();
+                    diagnosticsResult.innerHTML += `  -> Gemini API 분석 결과: 성공 (감정: ${analyzeData.primaryEmotion || '미반환'})\n`;
+                    diagnosticsResult.innerHTML += `  -> Redis 백업 상태: ${analyzeData.backupSuccess ? '성공 (OK)' : '실패 (FAIL)'}\n`;
+                    if (!analyzeData.backupSuccess) {
+                        diagnosticsResult.innerHTML += `  -> Redis 백업 오류 원인:\n      ${analyzeData.backupError || '환경변수 정보 누락 또는 파싱 오류'}\n`;
+                    } else {
+                        diagnosticsResult.innerHTML += `  -> Redis에 정상 기록되었습니다! 목록을 갱신합니다.\n`;
+                        loadDiaryHistory();
+                    }
+                } else {
+                    const errText = await analyzeRes.text();
+                    diagnosticsResult.innerHTML += `  -> 백엔드 API 에러: ${errText.substring(0, 200)}\n`;
+                }
+                
+                diagnosticsResult.innerHTML += '\n=== 자가 진단 검사 완료 ===';
+            } catch (e) {
+                diagnosticsResult.innerHTML += `\n[크리티컬 오류] 자바스크립트 네트워크 예외 발생: ${e.message}\n`;
+            }
+        });
     }
 });

@@ -38,8 +38,9 @@ export default async function handler(request, response) {
   }
 
   let redisConfig = null;
-  if (process.env.REDIS_URL) {
-    redisConfig = parseRedisUrl(process.env.REDIS_URL);
+  const redisUrl = process.env.REDIS_URL || process.env.Redis_URL || process.env.redis_url;
+  if (redisUrl) {
+    redisConfig = parseRedisUrl(redisUrl);
   } else if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
     redisConfig = {
       restUrl: process.env.UPSTASH_REDIS_REST_URL,

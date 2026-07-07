@@ -51,7 +51,7 @@ export default async function handler(request, response) {
     }
 
     const cleanedApiKey = apiKey.replace(/['"]/g, '').trim();
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
     
     const systemInstruction = `너는 심리 상담가야. 사용자가 작성한 일기 내용을 읽고, 사용자의 감정을 한 단어(예: 기쁨, 슬픔, 분노, 불안, 평온)로 요약해 줘. 그리고 그 감정에 공감해 주고 따뜻한 응원의 메시지를 2~3 문장으로 작성해 줘. 답변 형식은 반드시 '감정: [요약된 감정]\n\n[응원메시지]'와 같이 줄바꿈을 포함해서 보내줘
 
